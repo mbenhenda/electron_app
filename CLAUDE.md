@@ -8,21 +8,26 @@ A full-stack web application with a React/TypeScript frontend and FastAPI/Python
 
 ## Commands
 
-### Frontend (`frontend/`)
+### Docker (recommended)
+```bash
+docker compose up --build       # Build and start all services
+docker compose up -d            # Start detached
+docker compose down             # Stop (data persists in postgres_data volume)
+docker compose down -v          # Stop and delete the database volume
+```
 
+Services: frontend → `http://localhost:5173`, backend → `http://localhost:8000`, postgres → `localhost:5432`
+
+### Frontend (`frontend/`)
 ```bash
 npm run dev       # Dev server at http://localhost:5173
 npm run build     # TypeScript check + Vite production build
 npm run lint      # ESLint
-npm run preview   # Preview production build
 ```
 
 ### Backend (`backend/`)
-
 ```bash
-# Activate venv first
 source venv/bin/activate
-
 python -m uvicorn main:app --reload   # Dev server at http://localhost:8000
 ```
 

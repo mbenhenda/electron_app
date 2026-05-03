@@ -1,17 +1,23 @@
+import base64
+import hashlib
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import bcrypt
 import jwt
-from passlib.context import CryptContext
 
 from app.core.config import settings
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 15
 REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+
+def _prehash(password: str) -> bytes:
+    """SHA-256 + base64 keeps bcrypt input at exactly 44 bytes (well under the 72-byte limit)
+    while preserving the full entropy of arbitrarily long passwords."""
+    return base64.b64encode(hashlib.sha256(password.encode("utf-8")).digest())
 
 
 def create_access_token(subject: str | Any) -> str:
@@ -30,8 +36,8 @@ def create_refresh_token(subject: str | Any) -> tuple[str, str]:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(_prehash(plain_password), hashed_password.encode("utf-8"))
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(_prehash(password), bcrypt.gensalt()).decode("utf-8")

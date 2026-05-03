@@ -4,7 +4,7 @@ from typing import Any
 
 import jwt
 from fastapi import APIRouter, HTTPException, Request, Response
-from jwt.exceptions import JWTException
+from jwt.exceptions import InvalidTokenError
 from pydantic import BaseModel, EmailStr
 from sqlmodel import Session, select
 
@@ -77,7 +77,7 @@ def refresh(request: Request, response: Response, session: SessionDep) -> Access
 
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])
-    except JWTException:
+    except InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     if payload.get("type") != "refresh":
@@ -119,7 +119,7 @@ def logout(request: Request, response: Response, session: SessionDep) -> Message
             if db_token:
                 session.delete(db_token)
                 session.commit()
-        except JWTException:
+        except InvalidTokenError:
             pass
 
     response.delete_cookie(_COOKIE, path="/auth")
